@@ -1,21 +1,17 @@
 const {test, expect} = require('@playwright/test');
-const path = require('path');
-const loginData = require('../utils/Login.json')
+const loginData = require('../utils/Login.json');
+const { Interview } = require('../page/Interview');
 
 
 
 
-test.describe.configure({mode: 'parallel'});
 
 test('Automate login page', async ({page}) => {
 
-
+    const myPage = new Interview(page);
     await page.goto("https://the-internet.herokuapp.com/login");
     
-    await page.locator('#username').fill(loginData.validUser.username);
-    await page.locator('#password').fill(loginData.validUser.password);
-
-    await page.getByRole('button', {name: 'Login'}).click();
+    await myPage.validLogin(loginData.validUser.username, loginData.validUser.password);
     const successMessage = page.getByText("Welcome to the Secure Area. When you are done click logout below.");
     await expect(successMessage).toBeVisible();
 })
