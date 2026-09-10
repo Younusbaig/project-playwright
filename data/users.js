@@ -1,7 +1,7 @@
 module.exports = {
   validUser: {
-    email: 'rahim@gmail.com',
-    password: 'pakistan@123',
+    email: process.env.TEST_EMAIL,
+    password: process.env.TEST_PASSWORD,
   },
   invalidUser: {
     email: 'wronguser.com',
