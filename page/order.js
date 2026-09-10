@@ -31,11 +31,11 @@ class Order {
         await this.checkout.click();
     }
 
-    async shippingProduct(){
-        await this.shippingName.fill("ahmed baig");
-        await this.shippingAddress.fill("7 piper way Ilford");
-        await this.shippingCity.fill("lONDON");
-        await this.postalCode.fill("IG11 65A"); 
+    async shippingProduct(data){
+        await this.shippingName.fill(data.name);
+        await this.shippingAddress.fill(data.address);
+        await this.shippingCity.fill(data.city);
+        await this.postalCode.fill(data.postalCode); 
     }
 
     async submitOrder(){
