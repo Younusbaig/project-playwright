@@ -7,7 +7,7 @@ const { shippingDetails } = require('../../data/orderData');
 
 
 
-test.only('create a happy order flow', async ({authenticatedPage})=> {
+test('create a happy order flow', async ({authenticatedPage})=> {
 
     const order = new Order(authenticatedPage);
     await order.selectProduct();
