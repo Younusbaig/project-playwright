@@ -1,7 +1,7 @@
 const {test, expect} = require('@playwright/test');
 const { Signup } = require('../../page/signup');
 const { createNewUser } = require('../../utils/testDataFactory');
-
+require('dotenv').config();
 
 
 
