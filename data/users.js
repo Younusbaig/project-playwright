@@ -4,7 +4,7 @@ module.exports = {
     password: process.env.TEST_PASSWORD,
   },
   invalidUser: {
-    email: 'wronguser.com',
-    password: 'wrong',
+    email: 'wronguser@gmail.com',
+    password: 'wrong@1234',
   },
 };
