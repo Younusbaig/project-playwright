@@ -11,6 +11,7 @@ test("Successfully created account", async ({page}) => {
     await signUpPage.goto();
     await page.waitForLoadState('networkidle');
     await signUpPage.createAccount(users.validUser.email, users.validUser.password);
+    await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL("https://test-ecommerce-store--muhammadbaig199.replit.app/");
 })
 
