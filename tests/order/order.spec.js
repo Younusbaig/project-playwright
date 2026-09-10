@@ -18,3 +18,16 @@ test('create a happy order flow', async ({authenticatedPage})=> {
         authenticatedPage.getByText('It is on its way.')
     ).toBeVisible();
 })
+
+
+test('count orders in order history', async ({authenticatedPage})=> {
+    
+    const order = new Order(authenticatedPage);
+    await order.orderHistory();
+    await authenticatedPage.waitForLoadState('networkidle');
+    const count = await order.orderCount.count();
+    expect(count).toBe(9); 
+
+
+
+})

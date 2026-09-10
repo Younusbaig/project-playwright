@@ -12,6 +12,10 @@ class Order {
         this.shippingCity = page.getByTestId('input-shipping-city');
         this.postalCode = page.getByTestId('input-shipping-postal-code');
         this.submit = page.getByTestId('button-place-order');
+        this.orderCount = page.locator('[data-testid^="card-order-"]');
+        this.navButton = page.getByTestId('button-account-menu');
+        this.ordersLink = page.getByTestId('link-orders');
+
 
     }
 
@@ -40,6 +44,13 @@ class Order {
 
     async submitOrder(){
         await this.submit.click();
+    }
+
+
+    async orderHistory(){
+        await this.navButton.click();
+        await this.ordersLink.click();
+
     }
 }
 
