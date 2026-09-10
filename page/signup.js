@@ -5,27 +5,18 @@ class Signup {
 
 
         this.page = page;
-        this.signup = page.getByTestId('nav-signup-btn');
-        this.fullName = page.locator('#signup-name');
-        this.email = page.locator('#signup-email');
-        this.password = page.locator('#signup-password');
-        this.confirmPassword = page.locator('#signup-confirm');
-        this.signUpTerms = page.locator('#signup-terms');
-        this.createAccountBtn = page.getByTestId('signup-submit-btn');
-
+        this.email = page.getByTestId('input-auth-email');
+        this.password = page.getByTestId('input-auth-password');
+        this.createAccountBtn = page.getByTestId('button-auth-submit');
     }
 
     async goto(){
-        await this.page.goto("file:///Users/younus/Downloads/qa-practice-shop.html");
+        await this.page.goto("https://test-ecommerce-store--muhammadbaig199.replit.app/sign-up");
     }
 
-    async createAccount(name, email, password){
-        await this.signup.click();
-        await this.fullName.fill(name);
+    async createAccount(email, password){
         await this.email.fill(email);
         await this.password.fill(password);
-        await this.confirmPassword.fill(password);
-        await this.signUpTerms.click();
         await this.createAccountBtn.click();
 
 
