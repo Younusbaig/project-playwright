@@ -14,7 +14,13 @@ test("Successfully created account", async ({page}) => {
     await expect(page).toHaveURL("https://test-ecommerce-store--muhammadbaig199.replit.app/");
 })
 
-test("invalid data for signup", async ({page}) => {
+test("invalid data for signup", async ({page, request}) => {
+    await request.post('https://test-ecommerce-store--muhammadbaig199.replit.app/api/auth/signup', {
+    data: {
+      email: users.validUser.email,
+      password: users.validUser.password,
+    }
+  });
     const signUpPage = new Signup(page);
     await signUpPage.goto();
     await page.waitForLoadState('networkidle');
