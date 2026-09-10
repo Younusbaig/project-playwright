@@ -38,7 +38,6 @@ test('count orders in order history', async ({authenticatedPage})=> {
     // Go back to order history
     await order.orderHistory();
     await authenticatedPage.waitForLoadState('networkidle');
-    const afterCount = await order.orderCount.count();
 
     await expect(order.orderCount).toHaveCount(beforeCount + 1);
 
