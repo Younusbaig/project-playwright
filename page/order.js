@@ -2,7 +2,7 @@ class Order {
 
     constructor(page){
         this.page = page;
-        this.product = page.getByTestId('link-product-name-6');
+        this.product = page.getByTestId('link-product-name-5');
         this.quantity = page.getByTestId('button-increase-quantity');
         this.addToCart = page.getByTestId('button-add-to-cart');
         this.cart = page.getByTestId('link-cart');
@@ -15,6 +15,7 @@ class Order {
         this.orderCount = page.locator('[data-testid^="card-order-"]');
         this.navButton = page.getByTestId('button-account-menu');
         this.ordersLink = page.getByTestId('link-orders');
+        this.brandLink = page.getByTestId('link-brand');
 
 
     }
@@ -46,7 +47,9 @@ class Order {
         await this.submit.click();
     }
 
-
+    async brandButton(){
+        await this.brandLink.click();
+    }
     async orderHistory(){
         await this.navButton.click();
         await this.ordersLink.click();
