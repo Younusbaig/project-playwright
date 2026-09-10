@@ -19,7 +19,7 @@ test('successfully login', async ({page}) => {
 
 })
 
-test.only('test invalid email and password', async ({page}) => {
+test('test invalid email and password', async ({page}) => {
 
     const login = new Login(page);
     await login.goto();
