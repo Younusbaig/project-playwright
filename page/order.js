@@ -16,6 +16,8 @@ class Order {
         this.navButton = page.getByTestId('button-account-menu');
         this.ordersLink = page.getByTestId('link-orders');
         this.brandLink = page.getByTestId('link-brand');
+        this.searchInput = page.getByTestId('input-search');
+        this.searchProduct = page.getByTestId('link-product-name-3');
 
 
     }
@@ -54,6 +56,11 @@ class Order {
         await this.navButton.click();
         await this.ordersLink.click();
 
+    }
+
+    async search(){
+        await this.searchInput.fill('kitchen');
+        await this.searchProduct.click();
     }
 }
 
