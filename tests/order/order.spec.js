@@ -21,7 +21,7 @@ test('create a happy order flow', async ({authenticatedPage})=> {
 })
 
 
-test.only('count orders in order history', async ({authenticatedPage})=> {
+test('count orders in order history', async ({authenticatedPage})=> {
     const order = new Order(authenticatedPage);
     await order.orderHistory();
     await expect(order.orderCount.first()).toBeVisible()
