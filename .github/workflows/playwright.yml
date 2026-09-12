@@ -1,75 +1,137 @@
 name: Playwright Tests
+
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 permissions:
-  contents: write   # needed for peaceiris/actions-gh-pages to push the report
+  contents: write
 
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
+      # -----------------------------
+      # Checkout source code
+      # -----------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
+      # -----------------------------
+      # Setup Node
+      # -----------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
 
-    - name: Install dependencies
-      run: npm ci
+      # -----------------------------
+      # Install dependencies
+      # -----------------------------
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      # -----------------------------
+      # Install Playwright browsers
+      # -----------------------------
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
 
-    - name: Run Playwright tests
-      env:
-        TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
-        TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
-      run: npx playwright test
+      # -----------------------------
+      # Run Playwright tests
+      # -----------------------------
+      - name: Run Playwright tests
+        env:
+          TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+        run: npx playwright test
 
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      # -----------------------------
+      # Upload Playwright HTML report
+      # -----------------------------
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
 
-    # ---- Allure report generation + publishing (added) ----
+      # -----------------------------
+      # Check Allure results
+      # -----------------------------
+      - name: Check Allure results
+        if: ${{ !cancelled() }}
+        run: |
+          echo "=== Allure Results ==="
+          ls -la allure-results || true
 
-    - name: Upload raw Allure results
-      if: ${{ !cancelled() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: allure-results
-        path: allure-results/
-        retention-days: 30
+          echo "=== Number of Allure result files ==="
+          find allure-results -type f | wc -l || true
 
-    - name: Get previous Allure history (for trend graphs)
-      if: ${{ !cancelled() }}
-      continue-on-error: true
-      uses: actions/checkout@v4
-      with:
-        ref: gh-pages
-        path: gh-pages
+      # -----------------------------
+      # Upload raw Allure results
+      # -----------------------------
+      - name: Upload Allure results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results/
+          retention-days: 30
 
-    - name: Generate Allure report
-      if: ${{ !cancelled() }}
-      uses: simple-elf/allure-report-action@master
-      with:
-        allure_results: allure-results
-        allure_history: allure-history
-        gh_pages: gh-pages
-        keep_reports: 20
+      # -----------------------------
+      # Get previous Allure history
+      # -----------------------------
+      - name: Get previous Allure history
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
 
-    - name: Deploy Allure report to GitHub Pages
-      if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
-      continue-on-error: true
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: allure-history
-        force_orphan: true
+      # -----------------------------
+      # Generate Allure report
+      # -----------------------------
+      - name: Generate Allure report
+        if: ${{ !cancelled() }}
+        uses: simple-elf/allure-report-action@master
+        with:
+          allure_results: allure-results
+          allure_history: allure-history
+          gh_pages: gh-pages
+          keep_reports: 20
+
+      # -----------------------------
+      # Verify generated report
+      # -----------------------------
+      - name: Verify Allure report
+        if: ${{ !cancelled() }}
+        run: |
+          echo "=== Allure History ==="
+          find allure-history -maxdepth 2 -type f | head -50
+
+          echo ""
+          echo "=== Checking index.html ==="
+
+          if [ -f "allure-history/index.html" ]; then
+            echo "SUCCESS: index.html exists"
+          else
+            echo "ERROR: index.html was not generated"
+            exit 1
+          fi
+
+      # -----------------------------
+      # Deploy to GitHub Pages
+      # -----------------------------
+      - name: Deploy Allure report to GitHub Pages
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-history
