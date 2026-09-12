@@ -29,7 +29,6 @@ class Order {
 
     async selectProduct(){
         await this.product.click();
-        await this.quantity.click();
         await this.addToCart.click();
     }
 

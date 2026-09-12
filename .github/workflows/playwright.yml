@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       # -----------------------------
       # Checkout source code
       # -----------------------------
@@ -36,13 +37,13 @@ jobs:
         run: npm ci
 
       # -----------------------------
-      # Install Playwright browsers
+      # Install Playwright
       # -----------------------------
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
       # -----------------------------
-      # Run Playwright tests
+      # Run tests
       # -----------------------------
       - name: Run Playwright tests
         env:
@@ -51,7 +52,7 @@ jobs:
         run: npx playwright test
 
       # -----------------------------
-      # Upload Playwright HTML report
+      # Playwright HTML report
       # -----------------------------
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
@@ -60,18 +61,6 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
-
-      # -----------------------------
-      # Check Allure results
-      # -----------------------------
-      - name: Check Allure results
-        if: ${{ !cancelled() }}
-        run: |
-          echo "=== Allure Results ==="
-          ls -la allure-results || true
-
-          echo "=== Number of Allure result files ==="
-          find allure-results -type f | wc -l || true
 
       # -----------------------------
       # Upload raw Allure results
@@ -108,30 +97,59 @@ jobs:
           keep_reports: 20
 
       # -----------------------------
-      # Verify generated report
+      # Verify Allure report
       # -----------------------------
       - name: Verify Allure report
         if: ${{ !cancelled() }}
         run: |
-          echo "=== Allure History ==="
-          find allure-history -maxdepth 2 -type f | head -50
+          echo "Checking Allure report..."
 
-          echo ""
-          echo "=== Checking index.html ==="
-
-          if [ -f "allure-history/index.html" ]; then
-            echo "SUCCESS: index.html exists"
-          else
-            echo "ERROR: index.html was not generated"
+          if [ ! -f "allure-history/index.html" ]; then
+            echo "ERROR: Allure index.html not found"
             exit 1
           fi
 
+          echo "SUCCESS: Allure index.html exists"
+
+          echo "Report files:"
+          find allure-history -maxdepth 2 -type f | head -50
+
       # -----------------------------
-      # Deploy to GitHub Pages
+      # Deploy Allure to GitHub Pages
       # -----------------------------
-      - name: Deploy Allure report to GitHub Pages
+      - name: Deploy Allure report
         if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: allure-history
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Preparing GitHub Pages deployment..."
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Create temporary deployment directory
+          mkdir -p /tmp/allure-deploy
+
+          # Copy generated Allure report
+          cp -R allure-history/. /tmp/allure-deploy/
+
+          cd /tmp/allure-deploy
+
+          # Initialize git repository
+          git init
+
+          # Create gh-pages branch
+          git checkout --orphan gh-pages
+
+          # Add files
+          git add .
+
+          # Commit
+          git commit -m "Deploy Allure report"
+
+          # Push gh-pages branch
+          git push --force \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            gh-pages
+
+          echo "Allure report deployed successfully!"
