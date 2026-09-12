@@ -3,7 +3,7 @@ class Order {
     constructor(page){
         this.page = page;
         this.product = page.getByTestId('link-product-name-2');
-        this.quantity = page.getByTestId('button-increase-quantity');
+        // this.quantity = page.getByTestId('button-increase-quantity');
         this.addToCart = page.getByTestId('button-add-to-cart');
         this.cart = page.getByTestId('link-cart');
         this.checkout = page.getByTestId('button-checkout');
