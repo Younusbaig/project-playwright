@@ -117,39 +117,11 @@ jobs:
       # -----------------------------
       # Deploy Allure to GitHub Pages
       # -----------------------------
-      - name: Deploy Allure report
+      - name: Deploy Allure report to Cloudflare Pages
         if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Preparing GitHub Pages deployment..."
-
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Create temporary deployment directory
-          mkdir -p /tmp/allure-deploy
-
-          # Copy generated Allure report
-          cp -R allure-history/. /tmp/allure-deploy/
-
-          cd /tmp/allure-deploy
-
-          # Initialize git repository
-          git init
-
-          # Create gh-pages branch
-          git checkout --orphan gh-pages
-
-          # Add files
-          git add .
-
-          # Commit
-          git commit -m "Deploy Allure report"
-
-          # Push gh-pages branch
-          git push --force \
-            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
-            gh-pages
-
-          echo "Allure report deployed successfully!"
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy allure-history --project-name=project-playwright-allure
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
