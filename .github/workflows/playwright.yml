@@ -1,3 +1,4 @@
+
 name: Playwright Tests
 
 on:
@@ -7,7 +8,7 @@ on:
     branches: [main, master]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   test:
@@ -15,45 +16,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      # -----------------------------
-      # Checkout source code
-      # -----------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # -----------------------------
-      # Setup Node
-      # -----------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
 
-      # -----------------------------
-      # Install dependencies
-      # -----------------------------
       - name: Install dependencies
         run: npm ci
 
-      # -----------------------------
-      # Install Playwright
-      # -----------------------------
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      # -----------------------------
-      # Run tests
-      # -----------------------------
       - name: Run Playwright tests
         env:
           TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
         run: npx playwright test
 
-      # -----------------------------
-      # Playwright HTML report
-      # -----------------------------
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -61,10 +43,8 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+          if-no-files-found: warn
 
-      # -----------------------------
-      # Upload raw Allure results
-      # -----------------------------
       - name: Upload Allure results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -72,56 +52,32 @@ jobs:
           name: allure-results
           path: allure-results/
           retention-days: 30
+          if-no-files-found: warn
 
-      # -----------------------------
-      # Get previous Allure history
-      # -----------------------------
-      - name: Get previous Allure history
-        if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
-        continue-on-error: true
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: gh-pages
-
-      # -----------------------------
-      # Generate Allure report
-      # -----------------------------
       - name: Generate Allure report
         if: ${{ !cancelled() }}
         uses: simple-elf/allure-report-action@master
         with:
           allure_results: allure-results
           allure_history: allure-history
-          gh_pages: gh-pages
           keep_reports: 20
 
-      # -----------------------------
-      # Verify Allure report
-      # -----------------------------
       - name: Verify Allure report
         if: ${{ !cancelled() }}
         run: |
           echo "Checking Allure report..."
-
-          if [ ! -f "allure-history/index.html" ]; then
-            echo "ERROR: Allure index.html not found"
+          test -f allure-history/index.html || {
+            echo "ERROR: allure-history/index.html not found"
             exit 1
-          fi
+          }
 
-          echo "SUCCESS: Allure index.html exists"
+          echo "Report root:"
+          ls -la allure-history/
 
-          echo "Report files:"
-          find allure-history -maxdepth 2 -type f | head -50
-
-      # -----------------------------
-      # Deploy Allure to GitHub Pages
-      # -----------------------------
       - name: Deploy Allure report to Cloudflare Pages
-        if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
-        uses: cloudflare/wrangler-action@v4
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy allure-history --project-name=project-playwright-allure
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
